@@ -1,0 +1,17 @@
+[project]
+name = "ov-content-pipeline"
+version = "0.1.0"
+description = "Agentic content pipeline: distiller, ideator, drafter over GitHub + Notion"
+requires-python = ">=3.12"
+dependencies = [
+    "requests>=2.32",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "responses>=0.25",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
