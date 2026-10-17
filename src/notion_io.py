@@ -74,6 +74,9 @@ class Notion:
         })
         return data["id"]
 
+    def update_database(self, db_id: str, properties: dict) -> None:
+        self._request("PATCH", f"/databases/{db_id}", {"properties": properties})
+
     def query(self, db_id: str, filter: dict | None = None,
               sorts: list | None = None) -> list[dict]:
         payload: dict = {}

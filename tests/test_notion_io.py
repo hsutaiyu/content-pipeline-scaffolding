@@ -128,6 +128,16 @@ def test_property_helpers():
 
 
 @responses.activate
+def test_update_database_adds_property():
+    responses.patch(f"{BASE}/databases/{DB}", json={"id": DB}, status=200)
+
+    make().update_database(DB, {"Used-by": {"relation": {"database_id": "other-db"}}})
+
+    body = json.loads(responses.calls[0].request.body)
+    assert body["properties"] == {"Used-by": {"relation": {"database_id": "other-db"}}}
+
+
+@responses.activate
 def test_error_raises():
     responses.post(f"{BASE}/databases/{DB}/query", json={}, status=429)
 
