@@ -1,0 +1,42 @@
+name: init
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - name: Provision Notion surface
+        run: uv run python -m src.notion_setup
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_ROOT_PAGE_ID: ${{ secrets.NOTION_ROOT_PAGE_ID }}
+      - name: Commit ids
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add notion_ids.json
+          git diff --cached --quiet || git commit -m "chore: provisioned Notion surface"
+          git push
+      - name: Ingest sources
+        run: uv run python -m adapters.notion_source
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+      - name: Commit feed
+        run: |
+          git add feed
+          git diff --cached --quiet || git commit -m "chore: ingest feed"
+          git push
+      - name: Distill
+        run: uv run python -m src.distill
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}

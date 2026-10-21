@@ -1,0 +1,29 @@
+name: distill
+on:
+  push:
+    paths: ["feed/raw/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  distill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - run: uv run python -m src.distill
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+      - name: Commit manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add feed/distilled-manifest.json
+          git diff --cached --quiet || git commit -m "chore: update distilled manifest"
+          git push
