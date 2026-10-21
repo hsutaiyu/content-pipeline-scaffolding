@@ -16,8 +16,9 @@ from src.llm import complete
 from src.notion_io import Notion, date as d_prop, multi_select, paragraph, select, title
 from src.notion_setup import md_to_blocks
 
-PROMPT_PATH = Path("prompts/distiller.md")
-STORYBOOK_PATH = Path("storybook/state.md")
+REPO_ROOT = Path(__file__).resolve().parent.parent
+PROMPT_PATH = REPO_ROOT / "prompts" / "distiller.md"
+STORYBOOK_PATH = REPO_ROOT / "storybook" / "state.md"
 
 
 def parse_raw(path: Path) -> tuple[dict, str]:
@@ -105,7 +106,8 @@ def run(feed_dir: Path, manifest_path: Path, notion,
 
 
 def _distilled_db_id() -> str:
-    return json.loads(Path("notion_ids.json").read_text())["distilled_notes_db"]
+    ids = json.loads((REPO_ROOT / "notion_ids.json").read_text())
+    return ids["distilled_notes_db"]
 
 
 def main() -> int:

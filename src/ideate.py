@@ -13,8 +13,9 @@ from src.llm import complete
 from src.notion_io import (Notion, multi_select, relation, select, text, title)
 from src.notion_setup import md_to_blocks
 
-PROMPT_PATH = Path("prompts/ideator.md")
-IDS_PATH = Path("notion_ids.json")
+REPO_ROOT = Path(__file__).resolve().parent.parent
+PROMPT_PATH = REPO_ROOT / "prompts" / "ideator.md"
+IDS_PATH = REPO_ROOT / "notion_ids.json"
 
 
 def parse_cards(raw: str) -> list[dict]:
