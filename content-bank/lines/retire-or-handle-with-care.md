@@ -1,0 +1,30 @@
+# Retire or handle with care
+
+<!-- Snapshot of the “Low level content” sheet (research-call lines, as of Oct 12, 2026). Ported 2026-10-21. -->
+
+These came up on the calls but break a voice rule, a fact, or both. Most are easy swaps.
+
+| Line | Said by | Why | Use instead |
+|---|---|---|---|
+| “the 17 root DNS servers”, run by “Berkeley” and “Cisco” | Andreas · most calls | IANA (https://www.iana.org/domains/root/servers) lists 13 named root servers run by 12 organizations, and neither Berkeley nor Cisco runs one. | “13 named root servers, run by 12 independent organizations” |
+| “a decentralized Manhattan Project for the agentic era” | Andreas · 10+ calls | A weapons-program reference reads as hype, and the plan rules out urgency built on threat. | “an open research program on one hard problem” |
+| “that’s like Teflon from the Apollo program” | Andreas · Lorenzo Grassi, Pratyush Mishra | A myth: DuPont developed Teflon long before Apollo, and NASA adapted it (Museum of Flight (https://blog.museumofflight.org/debunking-nasa-space-spinoff-myths)). | “A post-quantum proof under 5 KB would be useful far beyond this thesis.” |
+| “It’s the TCP IP of the Internet of Open Value” | Andreas · Mahesh Balakrishnan and others | “The TCP/IP of X” is a stock pitch line in company/voice. | Explain the layering (Bucket 3). |
+| “It’s not a world computer, it’s a planetary event log” | Jack · most of his calls | The not-X-it’s-Y reversal is on company/voice’s AI-tell list. | Say what it is: a log of what happened, in order. Jack’s own handle can keep it. |
+| “make economics safe again” | Andreas · Vero Estrada-Galiñanes | Echoes a political slogan. | Drop it. |
+| “we only have 18 months to secure the human economy before it runs away from us”; “we don’t have 10 years... 18 months”; “we’re running out of time”; “our AI agents are not going to wait around” | Jack · Steven Galbraith, James Grimmelmann; Andreas · Vero Estrada-Galiñanes, Clara Schneidewind and Pedro Moreno-Sanchez | Urgency built on threat. | Why now as convergence (Bucket 1). |
+| Agent-attack stories: an exploit “24 hours from total takeover”, a bridge hack that “was a frontier model”, agents that “took their brethren literally”, “the guardrails go out the window”, “trillion-dollar class-action lawsuits” | Andreas · KU Leuven, Mohsen, Magnus Myreen, Ranjit Jhala, Atul Prakash calls | Fear framing, unverified, and some name companies. | The hopeful agent story: identity, scope and proof make agents insurable. |
+| “tokens are associated with pump and dump schemes and scams”; “there’s no token pumping”; “tokens are a dead end”; compliance is “what killed blockchains”; the world computer is a “fallacy”; “only three blockchains remain truly relevant”; Bitcoin and Solana are “federated” | Jack · Steven Galbraith, Zhen Zhuang; Andreas · Vero Estrada-Galiñanes, Aaron Stump, Christian, Rolf Weber, Christopher Peikert | Dunks on blockchains. The plan says lead with what worked. | Credit first (Bucket 1, spine 2). |
+| Trust bridges are “too large to fail, AKA it will fail”; intermediaries become “systemic risks” | Andreas · Mingxun Zhou, Kari Kostiainen, Ranjit Jhala | Casts the intermediaries, our future customers, as the threat. | “There’s a centralized coordinator, and that’s what makes it efficient.” Then the limit. |
+| Human traffic will fall below 10%, “could be even less than 1%”; “quantum computers will probably start breaking ECDSA signatures soon” | Andreas · Uwe Serdült, Abba Wada | Uncited predictions. | Cite a source or drop. |
+| Argentina’s Congress debating AI agents forming their own companies | Andreas · Zhaozhong Ni, Uwe Serdült, Ed Fassio | Unverified, and dated by now. | Verify before use. |
+| “200 billion transactions a second” on its own | Andreas · many calls | A number without its condition, against Gautam’s rule. | “If a trillion agents each transact about once every five seconds...” (Bucket 1) |
+| The scale figures side by side | Andreas · many calls | 200 billion exchanges a second against 50 to 100 MB/s of 5 KB proofs means one anchor per 10 to 20 million exchanges. | Say what gets anchored, likely batched proofs rather than every exchange. Check with Andreas. |
+| “500+ regulatory frameworks”, “194+ jurisdictions” | Andreas · various | Uncited, and the figure changes call to call. | “a few hundred”, the company/voice version. |
+| Two-dimensional Reed–Solomon coding “doubles” the data | Andreas · Lior Rotem, Mario Larangeira, Jérémie Decouchant | A 2D extension usually grows data fourfold, twofold per dimension. | State the scheme with its factor. Check with Andreas. |
+| “if you’re not using Frontier models in your research, we won’t even look at it”; “30 other institutions that are happy to take our money”; “raking the provost over the coals”; “academia needs to change”; proposals without formal verification are “hiding something” | Andreas · David Starobinski, Anirudh Sivaraman, Ligero, Alexey Gotsman, Christopher Peikert | Talks down to the primary audience. | “Use frontier AI tools. We encourage it.” “Formal verification belongs in a proposal from the start.” |
+| “software development is basically free”; “pushing the boundaries of physics”; “building the plane as it takes off” | Andreas · Anirudh Sivaraman, Esha Ghosh, Clara Schneidewind and Pedro Moreno-Sanchez | Overclaim or cliché. | “pushing what is physically practical” |
+| “design surface”, “interactive surface”, “intellectual capital nodes”, “crystallized truth artifacts”, “council of elders” | Jack and Andreas | Internal shorthand. | Say what becomes possible; “research nodes”. |
+| “composable trust”, “interoperability”, “trustless”, “zero-knowledge” | Jack and Andreas | Banned or avoided in company/voice and the decisions page. | “negotiate trust”, “coordinate across systems”, “proof of correct execution” |
+| The founder’s name, “effective altruist”, “$50 million”, “mid-eight figures”, “Gen1 founder” | Both · most calls before September | Phase 1 keeps founders and funding out. | Leave out. |
+| “Internet of Value”, “IOVI” | Both · through mid-September | Retired names. | “we” |
