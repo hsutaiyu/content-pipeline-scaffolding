@@ -37,19 +37,21 @@ IDEA_CARDS_SCHEMA = {
 DISTILLED_NOTES_SCHEMA = {
     "Name": {"title": {}},
     "Source": {"select": {"options": [
-        {"name": s} for s in ["dayai", "gtm", "search", "bank"]]}},
+        {"name": s} for s in ["digest", "casebank", "search"]]}},
     "Date": {"date": {}},
     "Beats": {"multi_select": {"options": []}},
 }
 
 SEED_PAGES = {
-    "Storybook / State": (
-        "# Storybook State\n\n"
-        "- Current chapter:\n- Open question:\n- Handoff question:\n"
-        "- Beats in play:\n- Anchors:\n"
-    ),
     "Storybook / Published Log": "# Published Log\n\nNothing published yet.\n",
 }
+
+STORYBOOK_SEED = Path("storybook/state.md")
+STORYBOOK_FALLBACK = (
+    "# Storybook State\n\n"
+    "- Current chapter:\n- Open question:\n- Handoff question:\n"
+    "- Beats in play:\n- Anchors:\n"
+)
 
 
 def md_to_blocks(markdown: str) -> list[dict]:
@@ -108,6 +110,12 @@ def main() -> int:
     n.update_database(distilled_db, {
         "Used-by": {"relation": {"database_id": ideas_db}}})
 
+    state = STORYBOOK_SEED.read_text() if STORYBOOK_SEED.exists() \
+        else STORYBOOK_FALLBACK
+    print("Seeding Storybook / State…")
+    ids["pages"]["Storybook / State"] = _seed_page(
+        n, root, "Storybook / State", state)
+
     for page_title, markdown in SEED_PAGES.items():
         print(f"Seeding {page_title}…")
         ids["pages"][page_title] = _seed_page(n, root, page_title, markdown)
@@ -118,11 +126,11 @@ def main() -> int:
         ids["pages"][page_title] = _seed_page(
             n, root, page_title, fmt_path.read_text())
 
-    voice = Path("voice/guidelines.md")
-    if voice.exists():
-        print("Seeding Voice / Guidelines…")
-        ids["pages"]["Voice / Guidelines"] = _seed_page(
-            n, root, "Voice / Guidelines", voice.read_text())
+    for voice_path in sorted(Path("voice").glob("*.md")):
+        page_title = f"Voice / {voice_path.stem}"
+        print(f"Seeding {page_title}…")
+        ids["pages"][page_title] = _seed_page(
+            n, root, page_title, voice_path.read_text())
 
     IDS_FILE.write_text(json.dumps(ids, indent=2) + "\n")
 

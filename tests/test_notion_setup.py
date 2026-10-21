@@ -30,7 +30,7 @@ def test_idea_cards_schema_matches_spec():
 def test_distilled_notes_schema_matches_spec():
     s = DISTILLED_NOTES_SCHEMA
     assert s["Name"] == {"title": {}}
-    assert _options(s, "Source") == {"dayai", "gtm", "search", "bank"}
+    assert _options(s, "Source") == {"digest", "casebank", "search"}
     assert s["Date"] == {"date": {}}
     assert s["Beats"] == {"multi_select": {"options": []}}
     # Used-by relation is wired after both DBs exist.
