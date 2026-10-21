@@ -106,15 +106,25 @@ class Notion:
         self._request("PATCH", f"/blocks/{page_id}/children", {"children": blocks})
 
     def get_page_markdown(self, page_id: str) -> str:
+        return "\n".join(
+            md for b in self.list_blocks(page_id)
+            if (md := _block_to_md(b)))
+
+    def list_blocks(self, page_id: str) -> list[dict]:
         blocks: list[dict] = []
         params: dict = {}
         while True:
             data = self._request("GET", f"/blocks/{page_id}/children", params)
             blocks.extend(data["results"])
             if not data.get("has_more"):
-                break
+                return blocks
             params = {"start_cursor": data["next_cursor"]}
-        return "\n".join(_block_to_md(b) for b in blocks if _block_to_md(b))
+
+    def archive_page(self, page_id: str) -> None:
+        self._request("PATCH", f"/pages/{page_id}", {"archived": True})
+
+    def delete_block(self, block_id: str) -> None:
+        self._request("DELETE", f"/blocks/{block_id}")
 
 
 def _plain(block: dict) -> str:

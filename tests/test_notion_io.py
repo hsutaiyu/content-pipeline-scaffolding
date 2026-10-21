@@ -138,6 +138,25 @@ def test_update_database_adds_property():
 
 
 @responses.activate
+def test_archive_list_delete():
+    responses.patch(f"{BASE}/pages/{PAGE}", json={"id": PAGE}, status=200)
+    responses.get(f"{BASE}/blocks/{PAGE}/children",
+                  json={"results": [{"id": "b1"}, {"id": "b2"}],
+                        "has_more": False}, status=200)
+    responses.delete(f"{BASE}/blocks/b1", json={}, status=200)
+    n = make()
+
+    n.archive_page(PAGE)
+    assert json.loads(responses.calls[0].request.body) == {"archived": True}
+
+    blocks = n.list_blocks(PAGE)
+    assert [b["id"] for b in blocks] == ["b1", "b2"]
+
+    n.delete_block("b1")
+    assert responses.calls[2].request.method == "DELETE"
+
+
+@responses.activate
 def test_error_raises():
     responses.post(f"{BASE}/databases/{DB}/query", json={}, status=429)
 
