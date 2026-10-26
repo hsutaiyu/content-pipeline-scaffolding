@@ -77,11 +77,15 @@ def md_to_blocks(markdown: str) -> list[dict]:
 
 
 def _seed_page(n: Notion, root: str, title: str, markdown: str) -> str:
-    return n.create_page(
+    blocks = md_to_blocks(markdown)
+    page_id = n.create_page(
         {"page_id": root},
         {"title": {"title": [{"text": {"content": title}}]}},
-        children=md_to_blocks(markdown),
+        children=blocks[:100],
     )
+    for i in range(100, len(blocks), 100):
+        n.append_blocks(page_id, blocks[i:i + 100])
+    return page_id
 
 
 def main() -> int:
