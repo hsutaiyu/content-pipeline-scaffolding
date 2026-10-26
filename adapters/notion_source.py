@@ -23,7 +23,8 @@ STATE_PATH_NAME = ".state.json"
 
 # Notion database ids (UUID of the database, from its URL).
 DIGESTS_DB = "273374da-af72-8263-bb5a-819f31e1e1d2"
-CASEBANK_DB = "4a531ae8-3bdd-4546-b67a-6352756912bf"
+# TEST copy of the Open Value Case Bank, duplicated under Content Pipeline (TEST).
+CASEBANK_DB = "088374da-af72-8222-a775-010a23dcd786"
 
 
 def _plain(prop: dict) -> str:
