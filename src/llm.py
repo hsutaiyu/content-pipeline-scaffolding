@@ -27,7 +27,12 @@ def complete(
 
     resp = requests.post(
         f"{base_url}/chat/completions",
-        headers={"Authorization": f"Bearer {api_key}"},
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            # The Kimi Coding relay (api.kimi.com/coding) only authorises
+            # recognised coding-agent user agents; python-requests gets 403.
+            "User-Agent": os.environ.get("LLM_USER_AGENT", "claude-code/0.1.0"),
+        },
         json={
             "model": model,
             "messages": [
