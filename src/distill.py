@@ -57,6 +57,11 @@ def parse_llm_json(raw: str) -> dict:
     return data
 
 
+def _clean_tags(tags: list) -> list[str]:
+    """Notion multi_select option names must not contain commas."""
+    return [t.replace(",", " ·").strip() for t in tags if t and t.strip()]
+
+
 def run(feed_dir: Path, manifest_path: Path, notion,
         llm_complete=complete, storybook_state: str | None = None,
         distilled_db_id: str | None = None) -> int:
@@ -75,33 +80,35 @@ def run(feed_dir: Path, manifest_path: Path, notion,
             rel = rel[4:]
         if rel in manifest:
             continue
-        meta, body = parse_raw(raw_file)
-        source = meta.get("source", raw_file.parent.name)
-        day = str(meta.get("date", date.today().isoformat()))
-        user = f"Storybook state:\n{state or '(none)'}\n\nRaw file ({rel}):\n{body}"
         try:
-            data = parse_llm_json(llm_complete(prompt, user))
-        except (json.JSONDecodeError, ValueError) as e:
-            print(f"FAIL {rel}: LLM output was not valid JSON ({e})")
+            meta, body = parse_raw(raw_file)
+            source = meta.get("source", raw_file.parent.name)
+            day = str(meta.get("date", date.today().isoformat()))
+            user = (f"Storybook state:\n{state or '(none)'}\n\n"
+                    f"Raw file ({rel}):\n{body}")
+            try:
+                data = parse_llm_json(llm_complete(prompt, user))
+            except (json.JSONDecodeError, ValueError) as e:
+                raise RuntimeError(f"LLM output was not valid JSON ({e})")
+            page_id = notion.create_page(
+                {"database_id": db_id},
+                {
+                    "Name": title(f"{source} · {day} · {raw_file.stem}"),
+                    "Source": select(source),
+                    "Date": d_prop(day),
+                    "Beats": multi_select(_clean_tags(data["beats"])),
+                },
+            )
+            md = render_note_markdown(data)
+            if md:
+                notion.append_blocks(page_id, md_to_blocks(md))
+            manifest[rel] = page_id
+            manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+            print(f"distilled {rel} -> {page_id}")
+        except RuntimeError as e:
+            print(f"FAIL {rel}: {e}")
             failures.append(rel)
-            continue
 
-        page_id = notion.create_page(
-            {"database_id": db_id},
-            {
-                "Name": title(f"{source} · {day} · {raw_file.stem}"),
-                "Source": select(source),
-                "Date": d_prop(day),
-                "Beats": multi_select(data["beats"]),
-            },
-        )
-        md = render_note_markdown(data)
-        if md:
-            notion.append_blocks(page_id, md_to_blocks(md))
-        manifest[rel] = page_id
-        print(f"distilled {rel} -> {page_id}")
-
-    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
     return 1 if failures else 0
 
 
