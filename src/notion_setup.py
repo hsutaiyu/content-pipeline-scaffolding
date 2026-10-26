@@ -106,9 +106,11 @@ def main() -> int:
 
     print("Wiring relations…")
     n.update_database(ideas_db, {
-        "Sources": {"relation": {"database_id": distilled_db}}})
+        "Sources": {"relation": {"database_id": distilled_db,
+                                 "single_property": {}}}})
     n.update_database(distilled_db, {
-        "Used-by": {"relation": {"database_id": ideas_db}}})
+        "Used-by": {"relation": {"database_id": ideas_db,
+                                 "single_property": {}}}})
 
     state = STORYBOOK_SEED.read_text() if STORYBOOK_SEED.exists() \
         else STORYBOOK_FALLBACK
@@ -134,7 +136,7 @@ def main() -> int:
 
     IDS_FILE.write_text(json.dumps(ids, indent=2) + "\n")
 
-    print(f"\nDone. Ids written to {IDS_FILE} (gitignored).")
+    print(f"\nDone. Ids written to {IDS_FILE} (committed by CI).")
     print("\nManual step — create the two gate views on the Idea Cards database:")
     print('  1. "Ideas awaiting selection": filter Status = proposed')
     print('  2. "Drafts awaiting approval": filter Status = drafted AND'
