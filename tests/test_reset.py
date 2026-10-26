@@ -44,6 +44,7 @@ def feed(tmp_path):
     raw.mkdir(parents=True)
     (raw / "2026-10-19-x.md").write_text("raw")
     (tmp_path / "feed" / "distilled-manifest.json").write_text("{}")
+    (tmp_path / "feed" / "evidence-manifest.json").write_text("{}")
     (tmp_path / "feed" / "raw" / ".state.json").write_text("{}")
     return tmp_path / "feed"
 
@@ -74,4 +75,5 @@ def test_reset_archives_wipes_reseeds(feed, tmp_path):
     # feed cleaned
     assert not list((feed / "raw").rglob("*.md"))
     assert not (feed / "distilled-manifest.json").exists()
+    assert not (feed / "evidence-manifest.json").exists()
     assert not (feed / "raw" / ".state.json").exists()

@@ -34,7 +34,7 @@ IDEA_CARDS_SCHEMA = {
     "Draft": {"url": {}},
 }
 
-DISTILLED_NOTES_SCHEMA = {
+EVIDENCE_NOTES_SCHEMA = {
     "Name": {"title": {}},
     "Source": {"select": {"options": [
         {"name": s} for s in ["digest", "casebank", "search"]]}},
@@ -100,9 +100,9 @@ def main() -> int:
     n = Notion()
     ids: dict = {"root": root, "pages": {}}
 
-    print("Creating Distilled Notes database…")
-    distilled_db = n.create_database(root, "Distilled Notes", DISTILLED_NOTES_SCHEMA)
-    ids["distilled_notes_db"] = distilled_db
+    print("Creating Evidence Notes database…")
+    evidence_db = n.create_database(root, "Evidence Notes", EVIDENCE_NOTES_SCHEMA)
+    ids["evidence_notes_db"] = evidence_db
 
     print("Creating Idea Cards database…")
     ideas_db = n.create_database(root, "Idea Cards", IDEA_CARDS_SCHEMA)
@@ -110,9 +110,9 @@ def main() -> int:
 
     print("Wiring relations…")
     n.update_database(ideas_db, {
-        "Sources": {"relation": {"database_id": distilled_db,
+        "Sources": {"relation": {"database_id": evidence_db,
                                  "single_property": {}}}})
-    n.update_database(distilled_db, {
+    n.update_database(evidence_db, {
         "Used-by": {"relation": {"database_id": ideas_db,
                                  "single_property": {}}}})
 

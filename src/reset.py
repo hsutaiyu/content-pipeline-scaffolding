@@ -1,6 +1,6 @@
 """Reset the pipeline to a clean slate.
 
-Archives every Distilled Notes and Idea Cards row and every draft page
+Archives every Evidence Notes and Idea Cards row and every draft page
 (soft delete — recoverable in Notion), wipes and re-seeds the Storybook /
 State and Storybook / Published Log pages, and clears the local feed state.
 
@@ -13,6 +13,11 @@ import shutil
 import sys
 from pathlib import Path
 
+from src.evidence import (
+    LEGACY_MANIFEST_NAME,
+    MANIFEST_NAME,
+    evidence_db_id,
+)
 from src.notion_io import Notion
 from src.notion_setup import md_to_blocks
 
@@ -28,8 +33,8 @@ def run(notion: Notion, ids: dict, feed_dir: Path, confirm: str,
         print("refusing to run: pass --confirm reset")
         sys.exit(2)
 
-    for db_key in ("distilled_notes_db", "idea_cards_db"):
-        for row in notion.query(ids[db_key]):
+    for db_id in (evidence_db_id(ids), ids["idea_cards_db"]):
+        for row in notion.query(db_id):
             notion.archive_page(row["id"])
             print(f"archived row {row['id']}")
 
@@ -48,8 +53,8 @@ def run(notion: Notion, ids: dict, feed_dir: Path, confirm: str,
         notion.append_blocks(page_id, md_to_blocks(seed))
         print(f"re-seeded {page_name}")
 
-    manifest = feed_dir / "distilled-manifest.json"
-    manifest.unlink(missing_ok=True)
+    for name in (MANIFEST_NAME, LEGACY_MANIFEST_NAME):
+        (feed_dir / name).unlink(missing_ok=True)
     (feed_dir / "raw" / ".state.json").unlink(missing_ok=True)
     for source_dir in (feed_dir / "raw").iterdir() if \
             (feed_dir / "raw").exists() else []:

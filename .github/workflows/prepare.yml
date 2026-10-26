@@ -1,11 +1,11 @@
-name: distill
+name: prepare
 on:
   push:
     paths: ["feed/raw/**"]
   workflow_dispatch:
     inputs:
       limit:
-        description: "Max raw items to distill this run (0 = all)"
+        description: "Max raw items to prepare this run (0 = all)"
         required: false
         default: "0"
 
@@ -13,23 +13,26 @@ permissions:
   contents: write
 
 jobs:
-  distill:
+  prepare:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv sync
-      - run: uv run python -m src.distill
+      - run: uv run python -m src.prepare
         env:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
-          DISTILL_LIMIT: ${{ inputs.limit }}
-      - name: Commit manifest
+          PREPARE_LIMIT: ${{ inputs.limit }}
+      - name: Commit evidence manifest
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add feed/distilled-manifest.json
-          git diff --cached --quiet || git commit -m "chore: update distilled manifest"
+          manifest=feed/evidence-manifest.json
+          if [ ! -f "$manifest" ]; then manifest=feed/distilled-manifest.json; fi
+          if [ -f "$manifest" ]; then git add "$manifest"; fi
+          git diff --cached --quiet || git commit -m "chore: update evidence manifest"
           git push

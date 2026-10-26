@@ -1,14 +1,11 @@
-"""Drafter stage: chosen idea card + format rules -> draft page in Notion.
-
-Usage: uv run python -m src.draft [--idea <page-id>]
-Requires: NOTION_API_KEY, notion_ids.json, LLM_BASE_URL, LLM_API_KEY, LLM_MODEL.
-"""
+"""Drafter agent: chosen card + cited evidence/raw sources -> Notion draft."""
 
 import argparse
 import json
 import sys
 from pathlib import Path
 
+from src.evidence import raw_sources_for_notes
 from src.llm import complete
 from src.notion_io import Notion, select
 from src.notion_setup import md_to_blocks
@@ -34,18 +31,24 @@ def card_from_row(row: dict) -> dict:
         "format": (props.get("Format", {}).get("select") or {}).get("name", ""),
         "chapter": _plain_text(props.get("Chapter", {})),
         "question": _plain_text(props.get("Question", {})),
-        "sources": [r["id"] for r in
-                    props.get("Sources", {}).get("relation", [])],
+        "sources": [
+            relation["id"]
+            for relation in props.get("Sources", {}).get("relation", [])
+        ],
     }
 
 
-def build_user_prompt(card: dict, notes_md: list[str], voice: str, fmt: str,
-                      lines_bank: str) -> str:
+def build_user_prompt(card: dict, notes_md: list[str], raw_sources: list[dict],
+                      voice: str, fmt: str, lines_bank: str) -> str:
     notes = "\n\n".join(notes_md) or "(none)"
+    raw = "\n\n".join(
+        f"### {source['path']}\n{source['text']}" for source in raw_sources
+    ) or "(none)"
     return (
         f"## Idea card\nTitle: {card['title']}\nChapter: {card['chapter']}\n"
         f"Question it serves: {card['question']}\n\n{card['body']}\n\n"
-        f"## Distilled notes cited\n{notes}\n\n"
+        f"## Evidence notes cited\n{notes}\n\n"
+        f"## Original raw sources cited\n{raw}\n\n"
         f"## Voice guidelines\n{voice}\n\n"
         f"## Format rules\n{fmt}\n\n"
         f"## Lines bank\n{lines_bank}"
@@ -57,20 +60,25 @@ def _page_url(page_id: str) -> str:
 
 
 def run(notion: Notion, ids: dict, llm_complete=complete,
-        idea_id: str | None = None, lines_dir: Path = LINES_DIR) -> int:
+        idea_id: str | None = None, lines_dir: Path = LINES_DIR,
+        feed_dir: Path = REPO_ROOT / "feed",
+        manifest_file: Path | None = None) -> int:
     rows = notion.query(ids["idea_cards_db"], filter={
-        "property": "Status", "select": {"equals": "chosen"}})
+        "property": "Status", "select": {"equals": "chosen"}
+    })
     if idea_id:
-        rows = [r for r in rows if r["id"] == idea_id]
+        rows = [row for row in rows if row["id"] == idea_id]
     if not rows:
         print("no chosen cards")
         return 0
 
     voice = "\n\n".join(
-        notion.get_page_markdown(pid)
-        for name, pid in ids["pages"].items() if name.startswith("Voice /"))
-    lines_bank = "\n\n".join(p.read_text()
-                             for p in sorted(lines_dir.glob("*.md")))
+        notion.get_page_markdown(page_id)
+        for name, page_id in ids["pages"].items() if name.startswith("Voice /")
+    )
+    lines_bank = "\n\n".join(
+        path.read_text() for path in sorted(lines_dir.glob("*.md"))
+    )
     prompt = PROMPT_PATH.read_text()
 
     for row in rows:
@@ -78,9 +86,14 @@ def run(notion: Notion, ids: dict, llm_complete=complete,
         card["body"] = notion.get_page_markdown(card["id"])
         fmt = notion.get_page_markdown(ids["pages"][f"Formats / {card['format']}"])
         notes_md = [notion.get_page_markdown(nid) for nid in card["sources"]]
+        raw_sources = raw_sources_for_notes(
+            card["sources"], feed_dir, manifest_file
+        )
 
-        draft = llm_complete(prompt, build_user_prompt(
-            card, notes_md, voice, fmt, lines_bank)).strip()
+        draft = llm_complete(
+            prompt,
+            build_user_prompt(card, notes_md, raw_sources, voice, fmt, lines_bank),
+        ).strip()
         if not draft:
             print(f"FAIL {card['title']}: empty draft")
             return 1
