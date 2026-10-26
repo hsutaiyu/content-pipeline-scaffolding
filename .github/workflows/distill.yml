@@ -3,6 +3,11 @@ on:
   push:
     paths: ["feed/raw/**"]
   workflow_dispatch:
+    inputs:
+      limit:
+        description: "Max raw items to distill this run (0 = all)"
+        required: false
+        default: "0"
 
 permissions:
   contents: write
@@ -20,6 +25,7 @@ jobs:
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          DISTILL_LIMIT: ${{ inputs.limit }}
       - name: Commit manifest
         run: |
           git config user.name "github-actions[bot]"

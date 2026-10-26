@@ -6,6 +6,7 @@ Requires: NOTION_API_KEY, NOTION_ROOT_PAGE_ID (or notion_ids.json),
 """
 
 import json
+import os
 import sys
 from datetime import date
 from pathlib import Path
@@ -74,12 +75,16 @@ def run(feed_dir: Path, manifest_path: Path, notion,
         state = STORYBOOK_PATH.read_text()
 
     failures = []
+    limit = int(os.environ.get("DISTILL_LIMIT", "0") or 0)
+    distilled = 0
     for raw_file in sorted(feed_dir.glob("raw/*/*.md")):
         rel = str(raw_file.relative_to(feed_dir))
         if rel.startswith("raw/"):
             rel = rel[4:]
         if rel in manifest:
             continue
+        if limit and distilled >= limit:
+            break
         try:
             meta, body = parse_raw(raw_file)
             source = meta.get("source", raw_file.parent.name)
@@ -104,6 +109,7 @@ def run(feed_dir: Path, manifest_path: Path, notion,
                 notion.append_blocks(page_id, md_to_blocks(md))
             manifest[rel] = page_id
             manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+            distilled += 1
             print(f"distilled {rel} -> {page_id}")
         except RuntimeError as e:
             print(f"FAIL {rel}: {e}")
