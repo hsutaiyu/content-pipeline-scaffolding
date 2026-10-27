@@ -132,6 +132,33 @@ def parse_digest_json(raw: str, valid_beats: list[str],
     return data
 
 
+def _extract_packets(llm_complete, prompt: str, base_user: str,
+                     chapters: list[str], source_text: str, rel: str) -> list[dict]:
+    """Extract theme packets, feeding validation errors back once.
+
+    Free-form LLM output drifts on near-misses (punctuation, handoff
+    questions read as titles). One guided retry fixes most flakes while
+    keeping the strict validation contract: a second failure raises.
+    """
+    feedback = ""
+    for attempt in range(2):
+        try:
+            return parse_digest_json(
+                llm_complete(prompt, base_user + feedback),
+                chapters, source_text,
+            )
+        except (json.JSONDecodeError, ValueError) as exc:
+            if attempt:
+                raise RuntimeError(f"Invalid digest extraction: {exc}") from exc
+            print(f"retrying {rel} with validation feedback: {exc}")
+            feedback = (
+                "\n\nYour previous extraction was rejected: "
+                f"{exc}\nUse ONLY chapter titles from the "
+                "vocabulary above, exactly as written."
+            )
+    raise RuntimeError(f"Invalid digest extraction: {rel}")
+
+
 def render_digest_note(packet: dict, meta: dict, rel: str) -> str:
     parts = [_metadata_markdown(meta, rel)]
     for key, heading in (
@@ -209,16 +236,14 @@ def run(feed_dir: Path, manifest_file: Path, notion,
                     source, day, meta.get("chapters", []), markdown,
                 ))
             elif source == "digest":
-                user = (
+                source_text = raw_file.read_text()
+                base_user = (
                     f"Storybook chapter vocabulary:\n{state or '(none)'}\n\n"
-                    f"Raw file ({rel}, including front matter):\n{raw_file.read_text()}"
+                    f"Raw file ({rel}, including front matter):\n{source_text}"
                 )
-                try:
-                    packets = parse_digest_json(
-                        llm_complete(prompt, user), chapters, raw_file.read_text()
-                    )
-                except (json.JSONDecodeError, ValueError) as exc:
-                    raise RuntimeError(f"Invalid digest extraction: {exc}") from exc
+                packets = _extract_packets(
+                    llm_complete, prompt, base_user, chapters, source_text, rel,
+                )
                 for packet in packets:
                     page_ids.append(_create_note(
                         notion, db_id,

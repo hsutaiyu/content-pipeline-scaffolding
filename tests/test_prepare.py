@@ -204,6 +204,29 @@ def test_digest_rejects_nonverbatim_quote_before_writing(tmp_path):
     assert not manifest.exists()
 
 
+def test_digest_recovers_from_invalid_chapters_with_feedback(tmp_path):
+    write_raw(tmp_path, source="digest", name="2026-10-19-digest.md",
+              body="Six callers discussed incentives: the users would have to pay.\n")
+    notion = FakeNotion()
+    manifest = tmp_path / "feed" / "evidence-manifest.json"
+    invalid = json.dumps([{"theme": "x", "beats": ["Show Your Work"]}])
+    calls = []
+
+    def flaky_llm(system, user):
+        calls.append(user)
+        return invalid if len(calls) == 1 else DIGEST_JSON
+
+    rc = run(tmp_path / "feed", manifest, notion,
+             llm_complete=flaky_llm, storybook_state=STATE,
+             evidence_notes_db_id="db-x")
+
+    assert rc == 0
+    assert len(calls) == 2
+    assert "previous extraction was rejected" in calls[1]
+    assert "Show Your Work" in calls[1]
+    assert len(notion.created) == 2
+
+
 def test_digest_rejects_bad_json_before_writing(tmp_path):
     write_raw(tmp_path, source="digest", name="2026-10-19-digest.md")
     notion = FakeNotion()
