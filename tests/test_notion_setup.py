@@ -1,5 +1,5 @@
 from src.notion_setup import (
-    DISTILLED_NOTES_SCHEMA,
+    EVIDENCE_NOTES_SCHEMA,
     IDEA_CARDS_SCHEMA,
     md_to_blocks,
 )
@@ -27,8 +27,8 @@ def test_idea_cards_schema_matches_spec():
     assert "Sources" not in s
 
 
-def test_distilled_notes_schema_matches_spec():
-    s = DISTILLED_NOTES_SCHEMA
+def test_evidence_notes_schema_matches_spec():
+    s = EVIDENCE_NOTES_SCHEMA
     assert s["Name"] == {"title": {}}
     assert _options(s, "Source") == {"digest", "casebank", "search"}
     assert s["Date"] == {"date": {}}
